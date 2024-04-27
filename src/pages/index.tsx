@@ -1,78 +1,74 @@
 import Image from "next/image";
 import { Inter } from "next/font/google";
-import { ChangeEvent, useState } from "react";
 import { useSearchCandidates } from "@/hooks/useSearchCandidates";
-import { CandidateModel } from "@/common/types";
+import CandidateCard from "./components/CandidateCard/CandidateCard";
 
 const inter = Inter({ subsets: ["latin"] });
 
 export default function Home() {
-  const [query, setQuery] = useState<string>("");
   const {
-    getDebouncedData,
-    candidates,
-    setCandidates,
-    setSelectedCandidates,
+    query,
     selectedCandidates,
+    availableCandidates,
+    changeHandler,
+    addCandidateHandler,
+    deleteCandidateHandler,
   } = useSearchCandidates();
-
-  const changeHandler = (e: ChangeEvent<HTMLInputElement>) => {
-    getDebouncedData(e.target.value);
-  };
-
-  const addCandidate = (candidateToAdd: CandidateModel) => {
-    setSelectedCandidates((prev) => [...prev, candidateToAdd]);
-    setCandidates((prev) =>
-      prev.filter(
-        (candidate) =>
-          candidate.firstName !== candidateToAdd.firstName &&
-          candidate.lastName !== candidateToAdd.lastName
-      )
-    );
-  };
-
-  const deleteCandidate = (candidateToRemove: CandidateModel) => {
-    setCandidates((prev) => [...prev, candidateToRemove]);
-    setSelectedCandidates((prev) =>
-      prev.filter(
-        (candidate) =>
-          candidate.firstName !== candidateToRemove.firstName &&
-          candidate.lastName !== candidateToRemove.lastName
-      )
-    );
-  };
-
   return (
-    <main
-      className={`flex min-h-screen flex-col items-center p-24 ${inter.className}`}
-    >
-      <h3>Search</h3>
-      <input type="text" className="text-black" onChange={changeHandler} />
-      <ul>
-        {candidates.length
-          ? candidates.map((candidate) => (
-              <li
-                key={`${candidate.firstName}${candidate.lastName}`}
-                onClick={() => addCandidate(candidate)}
-              >
-                {candidate.firstName} {candidate.lastName}
-              </li>
-            ))
-          : null}
-      </ul>
-      <h3>Results list</h3>
-      <ul>
-        {selectedCandidates.length
-          ? selectedCandidates.map((candidate) => (
-              <li
-                key={`${candidate.firstName}${candidate.lastName}`}
-                onClick={() => deleteCandidate(candidate)}
-              >
-                {candidate.firstName} {candidate.lastName}
-              </li>
-            ))
-          : null}
-      </ul>
+    <main className="w-full">
+      <div className="px-5 py-3">
+        <Image
+          priority
+          src="/assets/logo.svg"
+          alt="WorkHQ Logotype"
+          width={109}
+          height={34}
+        />
+      </div>
+      <div>
+        <div className="px-5 py-4 border-y border-gray-300">
+          <p className="pb-1 text-md font-semibold">Search</p>
+          <div className="relative">
+            <Image
+              priority
+              src="/assets/stars.svg"
+              alt="Stars"
+              width={28}
+              height={28}
+              className="absolute top-1/2 left-2 -translate-y-1/2"
+            />
+            <input
+              onChange={changeHandler}
+              value={query}
+              className="w-full p-2 pl-10 border rounded border-gray-300"
+              type="text"
+              placeholder="Darlene Robertson..."
+            />
+          </div>
+          {!!availableCandidates?.length && (
+            <ul className="absolute p-4 bg-white w-full border rounded border-gray-300">
+              {availableCandidates.map((candidate, index) => (
+                <li
+                  onClick={() => addCandidateHandler(candidate)}
+                  key={index}
+                  className="p-2 cursor-pointer"
+                >
+                  {candidate.firstName} {candidate.lastName}
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+        <div className="p-5 bg-gray-50">
+          {selectedCandidates.map((candidate, index) => (
+            <CandidateCard
+              key={index}
+              candidate={candidate}
+              deleteCandidateHandler={deleteCandidateHandler}
+            />
+          ))}
+        </div>
+      </div>
     </main>
   );
 }
